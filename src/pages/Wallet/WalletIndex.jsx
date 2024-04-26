@@ -4,6 +4,7 @@ import Deposit from "./Deposit";
 import Withdraw from "./Withdraw";
 import History from "./History";
 import { GetUserDetails, GetUserPaymentHistory } from "../../controller/UserController";
+import Loader from "../../componentes/Loader";
 
 export default function WalletIndex() {
   const [activeTab, setActiveTab] = useState("Deposit");
@@ -14,6 +15,7 @@ export default function WalletIndex() {
 
   const handleTabPress = (tab) => {
     setActiveTab(tab);
+    GetUserData()
   };
 
   const GetUserData = async () => {
@@ -38,9 +40,14 @@ export default function WalletIndex() {
     } catch (error) {}
   };
 
+  const withdrawChildFunction1=()=>{
+    GetUserData()
+  }
+
   useEffect(() => {
     GetUserData();
   }, []);
+
   useEffect(() => {
     GetHistory();
   }, []);
@@ -50,7 +57,7 @@ export default function WalletIndex() {
       case "Deposit":
         return <Deposit />;
       case "Withdraw":
-        return <Withdraw history={history} />;
+        return <Withdraw withdrawChildFunction1={withdrawChildFunction1} />;
       case "History":
         return <History history={history}/>;
       default:
@@ -84,7 +91,7 @@ export default function WalletIndex() {
       </View>
       <View
         className="w-[90%] flex flex-row justify-around items-center align-center h-28 m-auto mt-[-45] rounded-lg "
-        style={{ backgroundColor: "blue" }}
+        style={{ backgroundColor: "#ff5757" }}
       >
         <TouchableOpacity
           className="flex justify-center text-center items-center"
@@ -118,7 +125,7 @@ export default function WalletIndex() {
         </TouchableOpacity>
       </View>
       {historyLoading ? (
-        <Text>Loading...</Text>
+        <Loader/>
       ) : (
         <View className="w-full">{renderTabContent()}</View>
       )}

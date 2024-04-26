@@ -5,32 +5,50 @@ import UserProfile from "./UserProfile";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import WalletIndex from "../Wallet/WalletIndex";
 import MyTask from "../Tasks/MyTask";
+import Vip from "../Vip/Vip";
 
 const Tab = createBottomTabNavigator();
 
-export default function Dashboard() {
+export default function Dashboard({ navigation }) {
+  const handleLogoutRedirection = () => {
+    navigation.navigate("Welcome");
+  };
   return (
     <Tab.Navigator>
-      <Tab.Screen
-        name="Tasks"
-        options={{
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="account" color="black" size={20} />
-          ),
-        }}
-      >
-        {() => <MyTask />}
-      </Tab.Screen>
-
       <Tab.Screen
         name="Peofile"
         options={{
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="account" color="black" size={20} />
           ),
+          headerShown: false,
         }}
       >
-        {() => <UserProfile />}
+        {() => (
+          <UserProfile handleLogoutRedirection={handleLogoutRedirection} />
+        )}
+      </Tab.Screen>
+      <Tab.Screen
+        name="Tasks"
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="account" color="black" size={20} />
+          ),
+          headerShown: false,
+        }}
+      >
+        {() => <MyTask />}
+      </Tab.Screen>
+      <Tab.Screen
+        name="VIP"
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="gold" color="black" size={20} />
+          ),
+          headerShown: false,
+        }}
+      >
+        {() => <Vip />}
       </Tab.Screen>
       <Tab.Screen
         name="Wallet"
@@ -38,7 +56,7 @@ export default function Dashboard() {
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="wallet" color="black" size={20} />
           ),
-          headerShown:false
+          headerShown: false,
         }}
       >
         {() => <WalletIndex />}

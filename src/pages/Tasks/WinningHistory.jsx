@@ -1,26 +1,29 @@
 import React, { useEffect, useState } from "react";
-import { ScrollView, Text, View } from "react-native";
-import { GetUserPaymentHistory } from "../../controller/UserController";
+import { ScrollView } from "react-native";
+import { Text, View } from "react-native";
+import { GetWinningWalletHistory } from "../../controller/UserController";
 
-export default function History() {
-  const [data, setData] = useState([]);
+export default function WinningHistory() {
+  const [winningData, setWinningData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const GetHistory = async () => {
-    try {
-      const response = await GetUserPaymentHistory();
-      if (response.status === 200) {
-        setData(response.data.data);
-        setLoading(false);
-      }
-    } catch (error) {}
-  };
+  console.log(winningData)
 
   useEffect(() => {
-    GetHistory();
+    const getWinnigHistory = async () => {
+      try {
+        const fetchedData = await GetWinningWalletHistory();
+        setWinningData(fetchedData.data.reverse());
+        setLoading(false);
+      } catch (error) {
+        return <div>Loading...</div>;
+      }
+    };
+
+    getWinnigHistory();
   }, []);
   return (
-    <View>
-      <View className="table-auto mt-4 px-4  h-[60vh] ">
+    <ScrollView>
+      <View className="table-auto mt-4 px-4  ">
         <View className="bg-gray-400 flex flex-row fixed ">
           <Text className="w-[15%] font-bold p-2 ">No.</Text>
           <Text className="w-1/4   font-bold p-2 ">Amount</Text>
@@ -28,18 +31,23 @@ export default function History() {
           <Text className="w-1/3   font-bold p-2 ">Status</Text>
         </View>
         {loading ? (
-          Array.from({ length: 5 }).map((_, index) => (
-            <View key={index} className={`flex flex-row  ${(index+2)%2===0 ? "bg-gray-200" : "bg-white"}`}>
+          Array.from({ length: 50 }).map((_, index) => (
+            <View
+              key={index}
+              className={`flex flex-row  ${
+                (index + 2) % 2 === 0 ? "bg-gray-200" : "bg-white"
+              }`}
+            >
               <Text className="h-8 w-[15%] p-2"></Text>
               <Text className="h-8 w-1/4 p-2 text-left"></Text>
               <Text className="h-8 w-1/3 p-2 text-left"></Text>
               <Text className="h-8 w-1/3 p-2 text-left"></Text>
             </View>
-          )) 
+          ))
         ) : (
           <ScrollView>
-            {data &&
-              data.reverse().map((item, index) => (
+            {winningData &&
+              winningData.reverse().map((item, index) => (
                 <View
                   className={`flex flex-row ${
                     (index + 3) % 2 === 0 ? "bg-gray-200" : "bg-white"
@@ -49,14 +57,14 @@ export default function History() {
                   <Text className="w-[15%] p-2 ">{index + 1}.</Text>
                   <Text className="w-1/4  p-2  text-left">{item.amount}</Text>
                   <Text className="w-1/3 p-2 text-left">
-                    {item.payment_type}{" "}
+                    {item.type}
                   </Text>
-                  <Text className="w-1/3 p-2 text-left">{item.status} </Text>
+                  <Text className="w-1/3 p-2 text-left">{(item.date).split('T')[0]} </Text>
                 </View>
               ))}
           </ScrollView>
         )}
       </View>
-    </View>
+    </ScrollView>
   );
 }

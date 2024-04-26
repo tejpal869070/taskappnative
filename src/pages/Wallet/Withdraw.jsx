@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import {
+  Alert,
+  Button,
   Image,
   Modal,
   ScrollView,
@@ -15,7 +17,7 @@ import {
   WithdrawRequest,
 } from "../../controller/UserController";
 
-export default function Withdraw() {
+export default function Withdraw({ withdrawChildFunction1 }) {
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState();
   const [amount, setAmount] = useState("0");
@@ -28,11 +30,21 @@ export default function Withdraw() {
   const [singleWithdrawHistory, setSingleWithHistory] = useState();
   const [cancelling, setCancelling] = useState(false);
 
+  const[isBankUpdated, setBankUpdated] = useState(false)
+
+  const checkBank =async()=>{
+    if(userData&&userData.ifsc_code===null){
+      setBankUpdated(true)
+    }
+  }
+
+
   const GetUserData = async () => {
     try {
       const response = await GetUserDetails();
       if (response.status === 200) {
         setUserData(response.data.data[0]);
+        console.log(response.data.data[0])
         setLoading(false);
       }
     } catch (error) {
@@ -48,16 +60,22 @@ export default function Withdraw() {
     } else if (amount > (userData && userData.winning_balance * 60) / 100) {
       setProcessing(false);
       return;
+    } else if(userData&&userData.ifsc_code===null || userData.ac_name===null || userData.ac_no===null || userData.bank_name===null){
+      alert("Please update your bank account.")
+      setProcessing(false);
+      return
     }
     try {
       const response = await WithdrawRequest(amount);
       if (response.status === 200) {
         toggleModal();
         setProcessing(false);
+        withdrawChildFunction1();
       }
     } catch (error) {
       setFormError("Something went wrong");
       setProcessing(false);
+      console.log("wrong")
     }
   };
 
@@ -82,6 +100,7 @@ export default function Withdraw() {
 
   useEffect(() => {
     GetHistory();
+    checkBank()
   }, []);
 
   useEffect(() => {
@@ -95,6 +114,8 @@ export default function Withdraw() {
       if (response.status === 200) {
         console.log("withdraw success");
         setCancelling(false);
+        withdrawChildFunction1();
+        GetHistory();
         toggleModal2(null);
       } else {
         console.log("eroro");
@@ -132,17 +153,13 @@ export default function Withdraw() {
             </Text>
 
             <View className="flex flex-col mt-6">
-              <TouchableOpacity
+              <Text
                 onPress={() => handleWithdrawalCancel(data)}
-                className=" w-1/2 m-auto mb-4 opacity-100"
+                className=" w-1/2 m-auto mb-4 opacity-100 text-white   text-lg text-center font-bold rounded-lg py-2"
+                style={{ backgroundColor: "#00bf63" }}
               >
-                <Text
-                  className="text-white  text-lg text-center font-bold rounded-lg py-2"
-                  style={{ backgroundColor: "#00bf63" }}
-                >
-                  {cancelling ? "Processing..." : "Yes"}
-                </Text>
-              </TouchableOpacity>
+                {cancelling ? "Processing..." : "Yes"}
+              </Text>
               <TouchableOpacity
                 onPress={toggleModal2}
                 className="mt-4 w-1/2 m-auto"
@@ -164,34 +181,32 @@ export default function Withdraw() {
   return (
     <View className="flex bg-gray-100  rounded-lg flex-col  w-[90%] pt-6 m-auto">
       <Text className="font-bold text-2xl ml-1">Withdraw Your Earnings</Text>
-      {loading ? (
-        <Text>Loading...</Text>
-      ) : (
-        <View className="mt-4 pl-1">
-          <Text className="mb-1 text-[16px] font-semibold">
-            Account Holder: {userData.ac_name}
-          </Text>
-          <Text className="mb-1 text-[16px] font-semibold">
-            Bank: {userData.bank_name}
-          </Text>
-          <Text className="mb-1 text-[16px] font-semibold">
-            Account No.: {userData.ac_no}
-          </Text>
-          <Text className="mb-1 text-[16px] font-semibold">
-            IFSC Code: {userData.ifsc_code}
-          </Text>
-        </View>
-      )}
+
+      <View className="mt-4 pl-1">
+        <Text className="mb-1 text-[16px] font-semibold">
+          Account Holder: {userData && userData.ac_name}
+        </Text>
+        <Text className="mb-1 text-[16px] font-semibold">
+          Bank: {userData && userData.bank_name}
+        </Text>
+        <Text className="mb-1 text-[16px] font-semibold">
+          Account No.: {userData && userData.ac_no}
+        </Text>
+        <Text className="mb-1 text-[16px] font-semibold">
+          IFSC Code: {userData && userData.ifsc_code}
+        </Text>
+      </View>
+
       <View
         className="w-[100%] flex   py-4 m-auto  mt-6 rounded-lg "
-        style={{ backgroundColor: "blue" }}
+        style={{ backgroundColor: "#ff5757" }}
       >
         <Text className="text-white ml-5 mb-2 text-xl font-bold">
           Enter Amount
         </Text>
         <Text className="text-white ml-5 mb-1">Min : Rs.100/- </Text>
         <Text className="text-white ml-5">
-          Max : Rs.{userData && (userData.winning_balance * 60) / 100}/-{" "}
+        Withdrawable  : Rs.{userData && ((userData.winning_balance * 60) / 100).toFixed(2)}/-
         </Text>
         <View className="px-4">
           <TextInput
@@ -205,7 +220,7 @@ export default function Withdraw() {
           <TouchableOpacity onPress={handleWithdrawal}>
             <Text
               className="text-center  py-2 mt-4 rounded-lg font-bold text-white"
-              style={{ backgroundColor: "#00bf63" }}
+              style={{ backgroundColor: "#0e88c4" }}
             >
               {processing ? "Processing..." : "Withdraw"}
             </Text>
